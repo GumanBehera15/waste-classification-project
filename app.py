@@ -15,9 +15,8 @@ st.set_page_config(
 )
 
 st.title("♻️ AI-Based Waste Classification System")
-st.write(
-    "Upload an image of waste and the system will predict "
-    "its **class** and **waste type**."
+st.caption(
+    "Upload a waste image to predict its **class**, **waste type**, and **confidence**."
 )
 
 # --------------------------------------------------
@@ -36,22 +35,30 @@ with open("class_names.json", "r") as f:
     class_names = json.load(f)
 
 # --------------------------------------------------
-# File uploader
+# Layout: Two columns
 # --------------------------------------------------
-uploaded_file = st.file_uploader(
-    "📤 Upload a waste image",
-    type=["jpg", "jpeg", "png"]
-)
+left_col, right_col = st.columns([1, 1])
+
+# --------------------------------------------------
+# File uploader (LEFT)
+# --------------------------------------------------
+with left_col:
+    uploaded_file = st.file_uploader(
+        "📤 Upload waste image",
+        type=["jpg", "jpeg", "png"]
+    )
 
 # --------------------------------------------------
 # Prediction logic
 # --------------------------------------------------
 if uploaded_file is not None:
-    # Display image
+    # Load & display image
     img = tf.keras.preprocessing.image.load_img(
         uploaded_file, target_size=(224, 224)
     )
-    st.image(img, caption="Uploaded Image", use_column_width=True)
+
+    with left_col:
+        st.image(img, caption="Uploaded Image", width=260)
 
     # Preprocess image
     img_array = tf.keras.preprocessing.image.img_to_array(img) / 255.0
@@ -66,27 +73,38 @@ if uploaded_file is not None:
     waste_type = waste_type_mapping.get(predicted_class, "Unknown")
 
     # --------------------------------------------------
-    # Display results
+    # Display results (RIGHT)
     # --------------------------------------------------
-    st.success(f"🧠 Predicted Class: **{predicted_class}**")
-    st.info(f"🗑️ Waste Type: **{waste_type}**")
-    st.write(f"📊 Confidence: **{confidence:.2f}%**")
+    with right_col:
+        st.subheader("🔍 Prediction Results")
 
-    # Color-coded output
-    if waste_type == "Recyclable":
-        st.markdown("### ♻️ Please place this in the **Recyclable Bin**")
-    elif waste_type == "Food":
-        st.markdown("### 🍃 Please place this in the **Organic / Compost Bin**")
-    elif waste_type == "Hazardous":
-        st.markdown("### ☠️ Handle with care – **Hazardous Waste**")
-    else:
-        st.markdown("### 🗑️ Please place this in the **Residual Waste Bin**")
+        st.metric(
+            label="Predicted Class",
+            value=predicted_class
+        )
+
+        st.metric(
+            label="Waste Type",
+            value=waste_type
+        )
+
+        st.metric(
+            label="Confidence",
+            value=f"{confidence:.2f}%"
+        )
+
+        # Color-coded guidance
+        if waste_type == "Recyclable":
+            st.success("♻️ Place this in the **Recyclable Bin**")
+        elif waste_type == "Food":
+            st.success("🍃 Place this in the **Organic / Compost Bin**")
+        elif waste_type == "Hazardous":
+            st.error("☠️ **Hazardous Waste** – Handle with care")
+        else:
+            st.info("🗑️ Place this in the **Residual Waste Bin**")
 
 # --------------------------------------------------
-# Footer
+# Footer (compact)
 # --------------------------------------------------
 st.markdown("---")
-st.caption(
-    "SDG-12: Responsible Consumption & Production | "
-    "AI for Sustainable Waste Management"
-)
+st.caption("SDG-12: Responsible Consumption & Production | AI for Sustainability")
