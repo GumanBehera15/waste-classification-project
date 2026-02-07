@@ -1,0 +1,7 @@
+<project name="simulation-ant" default="compile" basedir=".">
+
+	    <target name="compile">
+		            <echo message="Compiling project using Ant"/>
+			        </target>
+
+			</project>
